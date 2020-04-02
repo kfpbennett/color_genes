@@ -233,6 +233,9 @@ pg.c <- assignChrom(pg, chrom.orders) %>%
   filter(sites > 5) %>%
   addPos()
 
+write.csv(pg.c, 'popgen_chrom.csv', row.names = FALSE)
+
+
 # Plot ------------------------------------------------------------------------
 
 fstcols <- c(rep(c('black', 'royalblue'), 17), 'black')
