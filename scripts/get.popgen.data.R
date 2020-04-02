@@ -121,7 +121,8 @@ addFreq <- function(pg.data, freq.data){
   return(cbind(pg.data, freq))
 }
 
-# Adds a position for easy plotting, with space in between each scaf (change)
+# Adds a position for easy plotting, with space in between each chromosome
+# Slightly crummy function, but gets the job done
 addPos <- function(data){
   data <- arrange(data, chrom, order, start)
   # Vector of contig names
