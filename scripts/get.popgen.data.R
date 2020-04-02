@@ -112,6 +112,7 @@ filterFreqs <-
 addFreq <- function(pg.data, freq.data){
   sites <- vector()
   for(i in 1:nrow(pg.data)){
+    loopsites <- vector()
     loopsites <- nrow(freq.data[freq.data$CHROM == pg.data$scaffold[i] & 
                                  freq.data$POS >= pg.data[i, 'start'] & 
                                  freq.data$POS <= pg.data[i, 'end'], ])
@@ -219,6 +220,7 @@ freqs <- fread('freqs_fil1_min5.csv') %>%
 # Read in popgen results, add ABBA-BABA, keep only scaffolds from Ragoo
 # results, then add lengths
 pg <- read.csv('popgen_full.csv', header = TRUE, stringsAsFactors = FALSE) %>%
+  # Negative fst values should be coerced to 0
   mutate(Fst_3_4 = replace(Fst_3_4, Fst_3_4 < 0, 0)) %>%
   filter(scaffold %in% chrom.orders$scaf) %>%
   left_join(lengths, by = 'scaffold')
@@ -230,46 +232,9 @@ pg.c <- assignChrom(pg, chrom.orders) %>%
   fixOrientation() %>%
   left_join(abbababa, by = c('scaffold', 'start', 'end')) %>%
   addFreq(freqs) %>%
-  filter(sites > 5) %>%
   addPos()
 
 write.csv(pg.c, 'popgen_chrom.csv', row.names = FALSE)
 
-
-# Plot ------------------------------------------------------------------------
-
-fstcols <- c(rep(c('black', 'royalblue'), 17), 'black')
-dxycols <- c(rep(c('black', 'firebrick1'), 17), 'black')
-fdcols <- c(rep(c('black', 'darkorchid1'), 17), 'black')
-freqcols <- c(rep(c('black', 'seagreen2'), 17), 'black')
-
-plot(pg.c$pos, 
-     pg.c$Fst_3_4, 
-     col = fstcols[as.numeric(pg.c$chrom)], 
-     pch = 20)
-
-plot(pg.c$pos, 
-     pg.c$dxy_3_4, 
-     col = dxycols[as.numeric(pg.c$chrom)], 
-     pch = 20)
-
-plot(pg.c$pos, 
-     pg.c$fd, 
-     col = fdcols[as.numeric(pg.c$chrom)], 
-     pch = 20)
-
-plot(pg.c$pos, 
-     pg.c$freq, 
-     ylim = c(0, 0.4),
-     col = freqcols[as.numeric(pg.c$chrom)], 
-     pch = 20)
-
-
-
-# 
-# plot(pg.c$pos, 
-#      pg.c$Fst_3_4, 
-#      pch = 20,
-#      col = alpha(plotcols[as.numeric(pg.c$chrom)], pg.c$conf_pos))
 
 
