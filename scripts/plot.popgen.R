@@ -54,7 +54,7 @@ baseplot <- ggplot(data = pg.c %>% filter(sites > 5))+
 fstcols <- c(rep(c('gray30', 'royalblue'), 17), 'gray30')
 dxycols <- c(rep(c('gray30', 'firebrick1'), 17), 'gray30')
 fdcols <- c(rep(c('gray30', 'darkorchid1'), 17), 'gray30')
-freqcols <- c(rep(c('gray30', 'seagreen2'), 17), 'gray30')
+freqcols <- c(rep(c('gray30', 'springgreen3'), 17), 'gray30')
 
 fstplot <- baseplot+
   scale_color_manual(values = fstcols)+
@@ -82,20 +82,20 @@ fdplot <- baseplot+
   geom_point(mapping = aes(x = pos, y = fd, color = chrom))+
   geom_segment(x = -7000000, y = -0.007, xend = 1572000000, yend = -0.007)+
   scale_y_continuous(
-    breaks = seq(from = 0, to = 1.0, by = 0.2),
-    labels = c('0', '0.2', '0.4', '0.6', '0.8', '1.0'),
+    breaks = seq(from = 0, to = 0.8, by = 0.4),
+    labels = c('0', '0.4', '0.8'),
     limits = c(-0.01, 1.05),
     expand = c(0, 0)
   )
 
 freqplot <- baseplot+
   scale_color_manual(values = freqcols)+
-  geom_point(mapping = aes(x = pos, y = freq, color = chrom, size = sites))+
+  geom_point(mapping = aes(x = pos, y = freq, color = chrom, size = 1.5))+
   geom_segment(x = -7000000, y = -0.007, xend = 1572000000, yend = -0.007)+
   scale_y_continuous(
     breaks = seq(from = 0, to = 0.4, by = 0.2),
     labels = c('0', '0.2', '0.4'),
-    limits = c(-0.01, 0.405),
+    limits = c(-0.01, 0.45),
     expand = c(0, 0)
   )
 
@@ -106,10 +106,16 @@ fstcols <- c(rep(c('black', 'royalblue'), 17), 'black')
 dxycols <- c(rep(c('black', 'firebrick1'), 17), 'black')
 fdcols <- c(rep(c('black', 'darkorchid1'), 17), 'black')
 freqcols <- c(rep(c('black', 'seagreen2'), 17), 'black')
+picols <- c(rep(c('black', 'darkorange2'), 17), 'black')
 
 plot(pg.c[pg.c$sites > 5,]$pos, 
      pg.c[pg.c$sites > 5,]$Fst_3_4, 
      col = fstcols[as.numeric(pg.c[pg.c$sites > 5,]$chrom)], 
+     pch = 20)
+
+plot(pg.c[pg.c$sites > 5,]$pos, 
+     pg.c[pg.c$sites > 5,]$pi_4, 
+     col = picols[as.numeric(pg.c[pg.c$sites > 5,]$chrom)], 
      pch = 20)
 
 plot(pg.c$pos, 
