@@ -215,7 +215,7 @@ abbababa <- read.csv('abbababa/P1pop3.10kb.csv', stringsAsFactors = FALSE) %>%
 
 # Read in allele frequency data
 freqs <- fread('freqs_fil1_min5.csv') %>%
-  filterFreqs()
+  filterFreqs(u=c(0, 0.3, 0.3, 0.5))
 
 # Read in popgen results, add ABBA-BABA, keep only scaffolds from Ragoo
 # results, then add lengths

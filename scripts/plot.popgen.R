@@ -90,7 +90,7 @@ fdplot <- baseplot+
 
 freqplot <- baseplot+
   scale_color_manual(values = freqcols)+
-  geom_point(mapping = aes(x = pos, y = freq, color = chrom, size = 1.5))+
+  geom_point(mapping = aes(x = pos, y = freq, color = chrom))+
   geom_segment(x = -7000000, y = -0.007, xend = 1572000000, yend = -0.007)+
   scale_y_continuous(
     breaks = seq(from = 0, to = 0.4, by = 0.2),
