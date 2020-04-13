@@ -7,6 +7,14 @@ setwd('C:/Users/kbenn/Documents/grad/phd/dissertation/data/pigment/')
 library(tidyverse)
 library(data.table)
 
+# Files for 10k windows
+abbababa.file <- 'abbababa/P1pop3.10kb.csv'
+popgen.file <- 'popgen_full.csv'
+
+# Files for 25k windows
+abbababa.file <- 'abbababa/P1pop3.25kb.csv'
+popgen.file <- 'popgenWindows_25k.csv'
+
 
 # =============================================================================*
 # --------------------------------- Functions ---------------------------------
@@ -208,7 +216,7 @@ lengths <- read.table(
   select(scaffold = V7, length = V9)
 
 # Read in ABBA-BABA results
-abbababa <- read.csv('abbababa/P1pop3.10kb.csv', stringsAsFactors = FALSE) %>%
+abbababa <- read.csv(abbababa.file, stringsAsFactors = FALSE) %>%
   select(scaffold, start, end, ABsites = sites, ABUsed = sitesUsed, fd) %>%
   # fd values below 0 or above 1 are meaningless
   mutate(fd = replace(fd, fd < 0 | fd > 1, 0))
@@ -219,7 +227,7 @@ freqs <- fread('freqs_fil1_min5.csv') %>%
 
 # Read in popgen results, add ABBA-BABA, keep only scaffolds from Ragoo
 # results, then add lengths
-pg <- read.csv('popgen_full.csv', header = TRUE, stringsAsFactors = FALSE) %>%
+pg <- read.csv(popgen.file, header = TRUE, stringsAsFactors = FALSE) %>%
   # Negative fst values should be coerced to 0
   mutate(Fst_3_4 = replace(Fst_3_4, Fst_3_4 < 0, 0)) %>%
   filter(scaffold %in% chrom.orders$scaf) %>%
@@ -234,7 +242,11 @@ pg.c <- assignChrom(pg, chrom.orders) %>%
   addFreq(freqs) %>%
   addPos()
 
+# Outputile for 10k windows
 write.csv(pg.c, 'popgen_chrom.csv', row.names = FALSE)
+
+# Output file for 25k windows
+write.csv(pg.c, 'popgen_chrom_25k.csv', row.names = FALSE)
 
 
 

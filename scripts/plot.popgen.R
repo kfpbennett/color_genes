@@ -14,7 +14,12 @@ library(ggplot2)
 
 # Read in the data ------------------------------------------------------------
 
+# Input for 10kb windows
 pg.c <- read.csv('popgen_chrom.csv') %>%
+  drop_na()
+
+# Input for 25kb windows
+pg.c <- read.csv('popgen_chrom_25k.csv') %>%
   drop_na()
 
 
