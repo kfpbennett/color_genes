@@ -22,6 +22,10 @@ pg.c <- read.csv('popgen_chrom.csv') %>%
 pg.c <- read.csv('popgen_chrom_25k.csv') %>%
   drop_na()
 
+# Input for 50kb windows
+pg.c <- read.csv('popgen_chrom_50k.csv') %>%
+  drop_na()
+
 
 # Plot ------------------------------------------------------------------------
 
@@ -66,9 +70,9 @@ fstplot <- baseplot+
   geom_point(mapping = aes(x = pos, y = Fst_3_4, color = chrom))+
   geom_segment(x = -7000000, y = -0.007, xend = 1572000000, yend = -0.007)+
   scale_y_continuous(
-    breaks = seq(from = 0, to = 0.6, by = 0.2),
-    labels = c('0', '0.2', '0.4', '0.6'),
-    limits = c(-0.01, 0.72),
+    breaks = seq(from = 0, to = 0.4, by = 0.2),
+    labels = c('0', '0.2', '0.4'),
+    limits = c(-0.01, 0.58),
     expand = c(0, 0)
   )
 
@@ -78,7 +82,7 @@ dxyplot <- baseplot+
   scale_y_continuous(
     breaks = seq(from = 0, to = 0.6, by = 0.2),
     labels = c('0', '0.2', '0.4', '0.6'),
-    limits = c(-0.01, 0.72),
+    limits = c(-0.01, 0.63),
     expand = c(0, 0)
   )
 
@@ -87,9 +91,9 @@ fdplot <- baseplot+
   geom_point(mapping = aes(x = pos, y = fd, color = chrom))+
   geom_segment(x = -7000000, y = -0.007, xend = 1572000000, yend = -0.007)+
   scale_y_continuous(
-    breaks = seq(from = 0, to = 0.8, by = 0.4),
-    labels = c('0', '0.4', '0.8'),
-    limits = c(-0.01, 1.05),
+    breaks = seq(from = 0, to = 0.6, by = 0.2),
+    labels = c('0', '0.2', '0.4', '0.6'),
+    limits = c(-0.01, 0.72),
     expand = c(0, 0)
   )
 
@@ -98,9 +102,9 @@ freqplot <- baseplot+
   geom_point(mapping = aes(x = pos, y = freq, color = chrom))+
   geom_segment(x = -7000000, y = -0.007, xend = 1572000000, yend = -0.007)+
   scale_y_continuous(
-    breaks = seq(from = 0, to = 0.4, by = 0.2),
-    labels = c('0', '0.2', '0.4'),
-    limits = c(-0.01, 0.45),
+    breaks = seq(from = 0, to = 0.2, by = 0.1),
+    labels = c('0', '0.1', '0.2'),
+    limits = c(-0.01, 0.27),
     expand = c(0, 0)
   )
 
