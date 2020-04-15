@@ -15,6 +15,10 @@ popgen.file <- 'popgen_full.csv'
 abbababa.file <- 'abbababa/P1pop3.25kb.csv'
 popgen.file <- 'popgenWindows_25k.csv'
 
+# Files for 25k windows
+abbababa.file <- 'abbababa/P1pop3.50kb.csv'
+popgen.file <- 'popgenWindows_50k.csv'
+
 
 # =============================================================================*
 # --------------------------------- Functions ---------------------------------
@@ -247,6 +251,10 @@ write.csv(pg.c, 'popgen_chrom.csv', row.names = FALSE)
 
 # Output file for 25k windows
 write.csv(pg.c, 'popgen_chrom_25k.csv', row.names = FALSE)
+
+# Output file for 50k windows
+write.csv(pg.c, 'popgen_chrom_50k.csv', row.names = FALSE)
+
 
 
 
