@@ -49,8 +49,8 @@ baseplot <- ggplot(data = pg.c %>% filter(sites > 5))+
   )+
   theme_bw()+
   theme(legend.position = 'none', 
-        panel.background = element_rect(fill = 'gray95'),
-        panel.border = element_rect(color = 'gray95'),
+        panel.background = element_rect(fill = 'gray97'),
+        panel.border = element_rect(color = 'gray97'),
         panel.grid = element_blank(),
         axis.title.y = element_blank(),
         axis.text.y = element_text(size = 14),# margin = margin(r = 3)),
@@ -60,10 +60,25 @@ baseplot <- ggplot(data = pg.c %>% filter(sites > 5))+
 
 
 # Color schemes
-fstcols <- c(rep(c('gray30', 'royalblue'), 17), 'gray30')
-dxycols <- c(rep(c('gray30', 'firebrick1'), 17), 'gray30')
-fdcols <- c(rep(c('gray30', 'darkorchid1'), 17), 'gray30')
-freqcols <- c(rep(c('gray30', 'springgreen3'), 17), 'gray30')
+palette0 <- c('royalblue', 'firebrick1', 'darkorchid1', 'springgreen3')
+palette1 <- c('#5CBCFF', '#A696FF', '#E064E6', '#FF009F')
+palette2 <- c('#FF2D3B', '#F46A09', '#DD9400', '#BEB600')
+palette3 <- c('#FF2D3B', '#DD9400', '#9AD349', '#00FFC8')
+palette4 <- c('#CE88B3', '#B0AAEE', '#6FD2FF', '#59EFFD')
+palette5 <- c('#A400B1', '#FF4476', '#FFAA60', '#FFD775')
+palette6 <- c('#f25a5a', '#cc5af2', '#5aa6f2', '#5af280')
+palette7 <- c('#f25a5a', '#b319e6', '#2273c3', '#2e9e4c')
+palette8 <- c('#FF0080', '#8000FF', '#0080FF', '#00FF80')
+palette9 <- c('#EA4752', '#A505D6', '#647CF2', '#6AB79E')
+
+# Set the color scheme
+pg.palette <- palette0
+
+# Make the figures
+fstcols <- c(rep(c('gray30', pg.palette[1]), 17), 'gray30')
+dxycols <- c(rep(c('gray30', pg.palette[2]), 17), 'gray30')
+fdcols <- c(rep(c('gray30', pg.palette[3]), 17), 'gray30')
+freqcols <- c(rep(c('gray30', pg.palette[4]), 17), 'gray30')
 
 fstplot <- baseplot+
   scale_color_manual(values = fstcols)+
@@ -72,7 +87,7 @@ fstplot <- baseplot+
   scale_y_continuous(
     breaks = seq(from = 0, to = 0.4, by = 0.2),
     labels = c('0', '0.2', '0.4'),
-    limits = c(-0.01, 0.58),
+    limits = c(-0.01, 0.5),
     expand = c(0, 0)
   )
 
@@ -80,9 +95,9 @@ dxyplot <- baseplot+
   scale_color_manual(values = dxycols)+
   geom_point(mapping = aes(x = pos, y = dxy_3_4, color = chrom))+
   scale_y_continuous(
-    breaks = seq(from = 0, to = 0.6, by = 0.2),
-    labels = c('0', '0.2', '0.4', '0.6'),
-    limits = c(-0.01, 0.63),
+    breaks = seq(from = 0, to = 0.4, by = 0.2),
+    labels = c('0', '0.2', '0.4'),
+    limits = c(-0.01, 0.56),
     expand = c(0, 0)
   )
 
@@ -93,18 +108,18 @@ fdplot <- baseplot+
   scale_y_continuous(
     breaks = seq(from = 0, to = 0.6, by = 0.2),
     labels = c('0', '0.2', '0.4', '0.6'),
-    limits = c(-0.01, 0.72),
+    limits = c(-0.01, 0.64),
     expand = c(0, 0)
   )
 
 freqplot <- baseplot+
   scale_color_manual(values = freqcols)+
   geom_point(mapping = aes(x = pos, y = freq, color = chrom))+
-  geom_segment(x = -7000000, y = -0.007, xend = 1572000000, yend = -0.007)+
+  geom_segment(x = -7000000, y = -0.005, xend = 1572000000, yend = -0.005)+
   scale_y_continuous(
-    breaks = seq(from = 0, to = 0.2, by = 0.1),
-    labels = c('0', '0.1', '0.2'),
-    limits = c(-0.01, 0.27),
+    breaks = seq(from = 0, to = 0.1, by = 0.1),
+    labels = c('0', '0.1'),
+    limits = c(-0.01, 0.12),
     expand = c(0, 0)
   )
 
