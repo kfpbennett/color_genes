@@ -2,20 +2,19 @@
 # ---------------------------------- Set up -----------------------------------
 # =============================================================================*
 
-# Change path if you are not Kevin
-setwd('C:/Users/kbenn/Documents/grad/phd/dissertation/data/pigment/')
+# setwd('C:/Users/kbenn/Documents/grad/phd/dissertation/data/pigment/')
 library(tidyverse)
 library(data.table)
 
 # Files for 10k windows
 abbababa.file <- 'abbababa/P1pop3.10kb.csv'
-popgen.file <- 'popgen_full.csv'
+popgen.file <- 'popgenWindows_10k.csv'
 
 # Files for 25k windows
 abbababa.file <- 'abbababa/P1pop3.25kb.csv'
 popgen.file <- 'popgenWindows_25k.csv'
 
-# Files for 25k windows
+# Files for 50k windows
 abbababa.file <- 'abbababa/P1pop3.50kb.csv'
 popgen.file <- 'popgenWindows_50k.csv'
 
@@ -25,13 +24,11 @@ popgen.file <- 'popgenWindows_50k.csv'
 # =============================================================================*
 
 # Sequence: assign everything a chromosome first, then take the reversed ones
-# and give them new positions ("mid"). Then order them by chromosome following
-# the addTruePos method. Then plot chromosome by chromosome.
+# and give them new positions ("mid"). Then use addPos to assign new positions
+# for plotting with a break in between each chromosome.
 
-
-
-# Takes in a dataframe of windowed analysis and returns the df with an extra
-# column for chromosome
+# Takes in a dataframe of windowed analysis and returns the dataframe with 
+# an extra column for chromosome
 assignChrom <- function(wins, chrom.list) {
   
   s_ord <- c()
@@ -75,30 +72,21 @@ assignChrom <- function(wins, chrom.list) {
   return(output)
 }
 
-# For use in fixOrientation, takes in popgen data filtered to a reverse-
-# oriented scaffold, reverses the positions
-reverse <- function(data) {
-  df <- data
-  df[ , c('start', 'end', 'mid')] <- df[ , c('start', 'end', 'mid')] %>%
-    arrange(-start)
-  return(df)
-}
-
 # Takes in popgen data, uses the orient column to flip around reverse-oriented
-# scaffolds, and returns the fixed original dataframe
+# scaffolds, and returns the fixed dataframe
 fixOrientation <- function(data) {
-  data <- data %>% arrange(chrom, order, start)
-  pos.scafs <- data %>% filter(orient == '+')
-  rev.scafs <- data %>% filter(orient == '-')
-  
-  fix.scafs <- data.frame()
-  for(i in unique(rev.scafs$scaffold)) {
-    fix.scafs <- fix.scafs %>%
-      rbind(rev.scafs[rev.scafs$scaffold == i,] %>% reverse())
-  }
-  
-  output <- rbind(pos.scafs, fix.scafs) %>% arrange(chrom, order, start)
-  return(output)
+  df <- data %>% arrange(chrom, order, start) %>%
+    group_by(scaffold) %>%
+    mutate(rev_start = sort(start, decreasing = TRUE),
+           rev_mid = sort(mid, decreasing = TRUE),
+           rev_end = sort(end, decreasing = TRUE)) %>%
+    mutate(newstart = case_when(orient == '-' ~ rev_start, TRUE ~ start),
+           newmid = case_when(orient == '-' ~ rev_mid, TRUE ~ mid),
+           newend = case_when(orient == '-' ~ rev_end, TRUE ~ end)) %>%
+    ungroup() %>%
+    arrange(chrom, order, newpos) %>%
+    select()
+  return(df)
 }
 
 # Takes in dataframe with allele frequencies of each site and filters to
