@@ -7,12 +7,12 @@ library(tidyverse)
 library(data.table)
 
 # Files for 10k windows
-abbababa.file <- 'abbababa/P1pop3.10kb.csv'
-popgen.file <- 'popgenWindows_10k.csv'
+abbababa.file <- 'abbababa/P1pop3.10kb.pip.csv'
+popgen.file <- 'popgen3_10k.csv'
 
 # Files for 25k windows
-abbababa.file <- 'abbababa/P1pop3.25kb.csv'
-popgen.file <- 'popgenWindows_25k.csv'
+abbababa.file <- 'abbababa/P1pop3.25kb.pip.csv'
+popgen.file <- 'popgenWindows_min21_25k.csv'
 
 # Files for 50k windows
 abbababa.file <- 'abbababa/P1pop3.50kb.csv'
@@ -78,14 +78,14 @@ fixOrientation <- function(data) {
   df <- data %>% arrange(chrom, order, start) %>%
     group_by(scaffold) %>%
     mutate(rev_start = sort(start, decreasing = TRUE),
-           rev_mid = sort(mid, decreasing = TRUE),
            rev_end = sort(end, decreasing = TRUE)) %>%
     mutate(newstart = case_when(orient == '-' ~ rev_start, TRUE ~ start),
-           newmid = case_when(orient == '-' ~ rev_mid, TRUE ~ mid),
+           newmid = case_when(orient == '-' ~ mid - start + newstart, TRUE ~ mid),
            newend = case_when(orient == '-' ~ rev_end, TRUE ~ end)) %>%
     ungroup() %>%
-    arrange(chrom, order, newpos) %>%
-    select()
+    select(scaffold:conf_orient, newstart:newend) %>%
+    arrange(chrom, order, newstart) %>%
+    as.data.frame()
   return(df)
 }
 
@@ -109,23 +109,21 @@ filterFreqs <-
 
 # Adds to popgen data a column with the proportion of sites passing an allele
 # frequency filter out of all sites in each genomic window
-addFreq <- function(pg.data, freq.data){
-  sites <- vector()
+addSNPs <- function(pg.data, freq.data){
+  dSNPs <- vector()
   for(i in 1:nrow(pg.data)){
-    loopsites <- vector()
-    loopsites <- nrow(freq.data[freq.data$CHROM == pg.data$scaffold[i] & 
-                                 freq.data$POS >= pg.data[i, 'start'] & 
-                                 freq.data$POS <= pg.data[i, 'end'], ])
-    sites <- append(sites, loopsites, after = length(sites))
-  }
-  freq <- sites/pg.data$sites
-  return(cbind(pg.data, freq))
+    dSNPs[i] <- nrow(
+      freq.data[freq.data$CHROM == pg.data$scaffold[i] & 
+                  freq.data$POS >= pg.data[i, 'start'] & 
+                  freq.data$POS <= pg.data[i, 'end'], ]
+      )}
+  return(cbind(pg.data, dSNPs))
 }
 
 # Adds a position for easy plotting, with space in between each chromosome
 # Slightly crummy function, but gets the job done
 addPos <- function(data){
-  data <- arrange(data, chrom, order, start)
+  data <- arrange(data, chrom, order, newstart)
   # Vector of contig names
   scafs <- unique(data$scaffold)
   
@@ -139,7 +137,7 @@ addPos <- function(data){
   maxs <- vector(mode = 'numeric', length = length(scafs))
   for(i in 1:length(maxs)){
     dat <- filter(data, scaffold == scafs[i])
-    maxs[i] <- max(dat$mid)}
+    maxs[i] <- max(dat$newmid)}
   
   # Add up last bins
   addmaxs  <- vector(mode = 'numeric', length = length(maxs))
@@ -159,9 +157,9 @@ addPos <- function(data){
            after = 0)
   
   # Vector of the new positions
-  pos <- vector(mode = 'numeric', length = nrow(data))
-  for(i in 1:length(pos)){
-    pos[i] <- sum(data$mid[i], master[i])}
+  plotpos <- vector(mode = 'numeric', length = nrow(data))
+  for(i in 1:length(plotpos)){
+    plotpos[i] <- sum(data$newmid[i], master[i])}
   
   # Space out chromosomes
   chrom.maxs <- vector()
@@ -170,11 +168,11 @@ addPos <- function(data){
   }
   
   for(i in 1:length(chrom.maxs)) {
-    pos[chrom.maxs[i]:length(pos)] <- 
-      pos[chrom.maxs[i]:length(pos)] + 15000000
+    plotpos[chrom.maxs[i]:length(plotpos)] <- 
+      plotpos[chrom.maxs[i]:length(plotpos)] + 15000000
   }
   
-  return(cbind(data, pos))
+  return(cbind(data, plotpos))
 }
 
 
@@ -209,13 +207,14 @@ lengths <- read.table(
 
 # Read in ABBA-BABA results
 abbababa <- read.csv(abbababa.file, stringsAsFactors = FALSE) %>%
-  select(scaffold, start, end, ABsites = sites, ABUsed = sitesUsed, fd) %>%
+  rename(ABmid = mid, ABsites = sites, ABsitesUsed = sitesUsed) %>%
   # fd values below 0 or above 1 are meaningless
   mutate(fd = replace(fd, fd < 0 | fd > 1, 0))
 
 # Read in allele frequency data
-freqs <- fread('freqs_fil1_min5.csv') %>%
-  filterFreqs(u=c(0, 0.3, 0.3, 0.5))
+freqs <- fread('freqs_min21_filtered.csv') %>%
+  rename(CHROM = '#CHROM') %>%
+  filter(wfreq1 >= 0.75, yfreq0 >= 0.75)
 
 # Read in popgen results, add ABBA-BABA, keep only scaffolds from Ragoo
 # results, then add lengths
@@ -231,14 +230,14 @@ pg <- read.csv(popgen.file, header = TRUE, stringsAsFactors = FALSE) %>%
 pg.c <- assignChrom(pg, chrom.orders) %>%
   fixOrientation() %>%
   left_join(abbababa, by = c('scaffold', 'start', 'end')) %>%
-  addFreq(freqs) %>%
+  addSNPs(freqs) %>%
   addPos()
 
 # Outputile for 10k windows
-write.csv(pg.c, 'popgen_chrom.csv', row.names = FALSE)
+write.csv(pg.c, 'popgen_min21_10k.csv', row.names = FALSE)
 
 # Output file for 25k windows
-write.csv(pg.c, 'popgen_chrom_25k.csv', row.names = FALSE)
+write.csv(pg.c, 'popgen_min21_25k.csv', row.names = FALSE)
 
 # Output file for 50k windows
 write.csv(pg.c, 'popgen_chrom_50k.csv', row.names = FALSE)
