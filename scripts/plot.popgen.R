@@ -28,7 +28,8 @@ make.bottom <- function(plotPars){
   ylabs <- plotPars[[10]]
   
   gg.bottom <- 
-    ggplot(data = data[data$scaffold == scaf,], aes(x = get(x), y = get(y)))+
+    ggplot(data = stats_data[stats_data$scaffold == scaf,], 
+           mapping = aes(x = get(x), y = get(y)))+
     geom_point()+
     scale_x_continuous(
       breaks = xbreaks, labels = xlabs, limits = xlims, expand = c(0, 0))+
@@ -311,4 +312,18 @@ plot.gene.stats(
   ylabs = c('0', '1')
 )
 
-
+plot.gene.stats(
+  annotation = gff,
+  gene = 'BCO2',
+  stats_data = 'pg.c',
+  scaf = 'NW_021940545.1',
+  x = 'mid',
+  y = 'fd',
+  xlims = c(5300000, 5900000),
+  xbreaks = seq(from = 5400000, to = 5800000, by = 200000),
+  xlabs = c('5.4 Mb', '5.6 Mb', '5.8 Mb'),
+  ylims = c(-0.1, 0.7),
+  ybreaks = c(0, 0.5),
+  ylabs = c('0', '0.5'),
+  glabel = TRUE
+)
