@@ -2,6 +2,8 @@
 # ---------------------------------- Set up -----------------------------------
 # =============================================================================*
 
+# setwd('C:/Users/kbenn/Documents/grad/phd/dissertation/data/pigment/')
+
 # Set directory and load packages ------------------------------------------
 
 library(tidyverse)
@@ -148,11 +150,12 @@ plot.gene.stats <- function(
 pg.c <- read.csv('popgen_min21_10k.csv') %>%
   drop_na()
 
-# Input for 25kb windows
-pg.c <- read.csv('popgen_min21_25k.csv') %>%
-  drop_na()
+# # Input for 25kb windows
+# pg.c <- read.csv('popgen_min21_25k.csv') %>%
+#   drop_na()
 
 # Read in GFF modified to be R-friendly, keep important info
+# Users other than KB will have to change the path
 gff <- fread('../genomes/Mvitellinus/Mvit_gff_simplified.txt', sep = '\t') %>%
   separate(col = V9, into = c('other','gene'), sep = 'gene=', remove = FALSE) %>%
   select(scaffold = V1, feature = V3, start = V4, end = V5, gene, V9) %>%
