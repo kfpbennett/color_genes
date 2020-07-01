@@ -11,6 +11,7 @@ library(ggplot2)
 library(grid)
 library(gridExtra)
 library(gtable)
+library(data.table)
 
 
 # Functions ----------------------------------------------------------------
