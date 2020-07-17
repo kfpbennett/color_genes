@@ -7,16 +7,12 @@ library(tidyverse)
 library(data.table)
 
 # Files for 10k windows
-abbababa.file <- 'abbababa/P1pop3.10kb.pip.csv'
-popgen.file <- 'popgen3_10k.csv'
+abbababaFile <- 'abbababa/P1pop3.10kb.pip.csv'
+popgenFile <- 'popgen3_10k.csv'
 
 # Files for 25k windows
-abbababa.file <- 'abbababa/P1pop3.25kb.pip.csv'
-popgen.file <- 'popgenWindows_min21_25k.csv'
-
-# Files for 50k windows
-abbababa.file <- 'abbababa/P1pop3.50kb.csv'
-popgen.file <- 'popgenWindows_50k.csv'
+abbababaFile <- 'abbababa/P1pop3.25kb.pip.csv'
+popgenFile <- 'popgenWindows_min21_25k.csv'
 
 
 # =============================================================================*
@@ -29,15 +25,15 @@ popgen.file <- 'popgenWindows_50k.csv'
 
 # Takes in a dataframe of windowed analysis and returns the dataframe with 
 # an extra column for chromosome
-assignChrom <- function(wins, chrom.list) {
+assign.chrom <- function(wins, chrom_list) {
   
   s_ord <- c()
-  for(i in 1:length(unique(chrom.list$chrom))) {
-    chr <- chrom.list[chrom.list$chrom == unique(chrom.list$chrom)[i],]
+  for(i in 1:length(unique(chrom_list$chrom))) {
+    chr <- chrom_list[chrom_list$chrom == unique(chrom_list$chrom)[i],]
     n <- nrow(chr)
     s_ord <- c(s_ord, 1:n)
   }
-  chrom.list <- cbind(chrom.list, s_ord)
+  chrom_list <- cbind(chrom_list, s_ord)
   
   scafs <- unique(wins$scaffold)
   chroms <- c()
@@ -46,11 +42,11 @@ assignChrom <- function(wins, chrom.list) {
   c_pos <- c()
   c_or <- c()
   for(i in 1:length(scafs)) {
-    chroms[i] <- chrom.list$chrom[which(chrom.list$scaf == scafs[i])]
-    orders[i] <- chrom.list$s_ord[which(chrom.list$scaf == scafs[i])]
-    orients[i] <- chrom.list$orient[which(chrom.list$scaf == scafs[i])]
-    c_pos[i] <- chrom.list$conf_pos[which(chrom.list$scaf == scafs[i])]
-    c_or[i] <- chrom.list$conf_orient[which(chrom.list$scaf == scafs[i])]
+    chroms[i] <- chrom_list$chrom[which(chrom_list$scaf == scafs[i])]
+    orders[i] <- chrom_list$s_ord[which(chrom_list$scaf == scafs[i])]
+    orients[i] <- chrom_list$orient[which(chrom_list$scaf == scafs[i])]
+    c_pos[i] <- chrom_list$conf_pos[which(chrom_list$scaf == scafs[i])]
+    c_or[i] <- chrom_list$conf_orient[which(chrom_list$scaf == scafs[i])]
   }
   rows <- c()
   for(i in 1:length(scafs)) {
@@ -74,7 +70,7 @@ assignChrom <- function(wins, chrom.list) {
 
 # Takes in popgen data, uses the orient column to flip around reverse-oriented
 # scaffolds, and returns the fixed dataframe
-fixOrientation <- function(data) {
+fix.orientation <- function(data) {
   df <- data %>% arrange(chrom, order, start) %>%
     group_by(scaffold) %>%
     mutate(rev_start = sort(start, decreasing = TRUE),
@@ -93,7 +89,7 @@ fixOrientation <- function(data) {
 # specifications. Default values are 0.75 like vitellinus for pop4, 0.75
 # like candei for pop3, fixed different between pops 2 and 12, and no more
 # than 0.25 uncalled for pops 3 and 4, no more than 0.5 for parentals
-filterFreqs <- 
+filter.freqs <- 
   function(data, u=c(0.5, 0.3, 0.3, 0.5), pw=1, w=0.75, y=0.75, py=1) {
     output <- data %>%
     filter(pwfrequ <= u[1], 
@@ -109,34 +105,30 @@ filterFreqs <-
 
 # Adds to popgen data a column with the proportion of sites passing an allele
 # frequency filter out of all sites in each genomic window
-addSNPs <- function(pg.data, freq.data){
+add.SNPs <- function(pg_data, freq_data){
   dSNPs <- vector()
-  for(i in 1:nrow(pg.data)){
+  for(i in 1:nrow(pg_data)){
     dSNPs[i] <- nrow(
-      freq.data[freq.data$CHROM == pg.data$scaffold[i] & 
-                  freq.data$POS >= pg.data[i, 'start'] & 
-                  freq.data$POS <= pg.data[i, 'end'], ]
+      freq_data[freq_data$CHROM == pg_data$scaffold[i] & 
+                  freq_data$POS >= pg_data[i, 'start'] & 
+                  freq_data$POS <= pg_data[i, 'end'], ]
       )}
-  return(cbind(pg.data, dSNPs))
+  return(cbind(pg_data, dSNPs))
 }
 
 # Adds a position for easy plotting, with space in between each chromosome
 # Slightly crummy function, but gets the job done
-addPos <- function(data){
+add.pos <- function(data){
   data <- arrange(data, chrom, order, newstart)
   # Vector of contig names
   scafs <- unique(data$scaffold)
   
-  # Vector of number of rows occupied by each scaffold
+  # Vector of number of rows occupied by each scaffold and last bin of each
   rows <- vector(mode = 'numeric', length = length(scafs))
+  maxs <- vector(mode = 'numeric', length = length(scafs))
   for(i in 1:length(rows)){
     dat <- filter(data, scaffold == scafs[i])
-    rows[i] <- nrow(dat)}
-  
-  # Vector of last bins of each scaffold
-  maxs <- vector(mode = 'numeric', length = length(scafs))
-  for(i in 1:length(maxs)){
-    dat <- filter(data, scaffold == scafs[i])
+    rows[i] <- nrow(dat)
     maxs[i] <- max(dat$newmid)}
   
   # Add up last bins
@@ -149,7 +141,7 @@ addPos <- function(data){
   rows <- rows[-1]
   
   # Vector containing the last bin length of each scaffold, repeated the number
-  # of the next contig's bins times
+  # of the next scaffold's bins times
   master <- rep((addmaxs), times = rows)
   master <- 
     append(master, 
@@ -171,8 +163,27 @@ addPos <- function(data){
     plotpos[chrom.maxs[i]:length(plotpos)] <- 
       plotpos[chrom.maxs[i]:length(plotpos)] + 15000000
   }
+  # The below creates cpos, the position from the beginning of each chromosome
+  lastpos <- vector()
+  for(i in 1:length(chrom.maxs)){
+    lastpos[i] <- plotpos[chrom.maxs[i] - 1]
+  }
   
-  return(cbind(data, plotpos))
+  crows <- vector()
+  for(i in 1:length(unique(data$chrom))) {
+    crows[i] <- nrow(data[data$chrom == unique(data$chrom)[i],])
+  }
+  
+  lastpos <- append(lastpos, 0, after = 0)
+  lastpos <- rep(lastpos, times = crows)
+  
+  cpos <- vector()
+  for(i in 1:length(plotpos)){
+    cpos[i] <- plotpos[i] - lastpos[i] - 15000000
+  }
+  cpos[1:crows[1]] <- cpos[1:crows[1]] + 15000000
+  
+  return(cbind(data, cpos, plotpos))
 }
 
 
@@ -183,21 +194,27 @@ addPos <- function(data){
 # Read in the data ------------------------------------------------------------
 
 # Get list of files from Ragoo output
-files <- list.files(path = './ragoo/orderings/', pattern = 'Chr*')
+files <- list.files(path = './ragoo/orderings/', pattern = '*_orderings')
 
 # Read the Ragoo output into a list
-order.list <- lapply(paste0('./ragoo/orderings/', files), 
+orderList <- lapply(paste0('./ragoo/orderings/', files), 
                      read.table, 
                      stringsAsFactors = FALSE)
-names(order.list) <- map(str_split(files, '_'), 1)
+names(orderList) <- map(str_split(files, '_'), 1)
 
 # Convert the list into a dataframe
-chrom.orders <- bind_rows(order.list, .id = "column_label") %>%
+chromOrders <- bind_rows(orderList, .id = "column_label") %>%
   rename(chrom = column_label, 
          scaf = V1, 
          orient = V2, 
          conf_pos = V3, 
          conf_orient = V4)
+
+co1 <- chromOrders[as.numeric(as.factor(chromOrders$chrom)) %in% c(1:30, 35),]
+co2 <- chromOrders[as.numeric(as.factor(chromOrders$chrom)) %in% c(31:34, 36:82),]
+co2$chrom <- 'unplaced'
+chromOrders <- rbind(co1, co2)
+rm(co1, co2)
 
 # Read in scaffold lenths
 lengths <- read.table(
@@ -206,7 +223,7 @@ lengths <- read.table(
   select(scaffold = V7, length = V9)
 
 # Read in ABBA-BABA results
-abbababa <- read.csv(abbababa.file, stringsAsFactors = FALSE) %>%
+abbababa <- fread('abbababa/P1pop3.10kb.pip.csv') %>%
   rename(ABmid = mid, ABsites = sites, ABsitesUsed = sitesUsed) %>%
   # fd values below 0 or above 1 are meaningless
   mutate(fd = replace(fd, fd < 0 | fd > 1, 0))
@@ -216,31 +233,33 @@ freqs <- fread('freqs_min21_filtered.csv') %>%
   rename(CHROM = '#CHROM') %>%
   filter(wfreq1 >= 0.75, yfreq0 >= 0.75)
 
+pg412 <- fread('popgen_4-12_min21_10k.csv') %>%
+  mutate(Fst_4_12 = replace(Fst_4_12, Fst_4_12 < 0, 0))
+
 # Read in popgen results, add ABBA-BABA, keep only scaffolds from Ragoo
 # results, then add lengths
-pg <- read.csv(popgen.file, header = TRUE, stringsAsFactors = FALSE) %>%
+pg <- fread('popgen3_10k.csv') %>%
   # Negative fst values should be coerced to 0
   mutate(Fst_3_4 = replace(Fst_3_4, Fst_3_4 < 0, 0)) %>%
-  filter(scaffold %in% chrom.orders$scaf) %>%
-  left_join(lengths, by = 'scaffold')
+  left_join(pg412, by = c('scaffold', 'start', 'end', 'mid', 'sites', 'pi_4')) %>%
+  left_join(lengths, by = 'scaffold') %>%
+  mutate(rnd = dxy_3_4/dxy_4_12, 
+         nd = dxy_3_4 - (pi_3 + pi_4) / 2)
 
 
 # Make the final popgen analysis dataframe ------------------------------------
 
-pg.c <- assignChrom(pg, chrom.orders) %>%
-  fixOrientation() %>%
+pgc <- assign.chrom(pg, chromOrders) %>%
+  fix.orientation() %>%
   left_join(abbababa, by = c('scaffold', 'start', 'end')) %>%
-  addSNPs(freqs) %>%
-  addPos()
+  add.SNPs(freqs) %>%
+  add.pos()
 
-# Outputile for 10k windows
-write.csv(pg.c, 'popgen_min21_10k.csv', row.names = FALSE)
+# Output file for 10k windows
+write.csv(pgc, 'popgen_min21_rnd_10k.csv', row.names = FALSE)
 
 # Output file for 25k windows
-write.csv(pg.c, 'popgen_min21_25k.csv', row.names = FALSE)
-
-# Output file for 50k windows
-write.csv(pg.c, 'popgen_chrom_50k.csv', row.names = FALSE)
+write.csv(pgc, 'popgen_min21_25k.csv', row.names = FALSE)
 
 
 
